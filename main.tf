@@ -66,7 +66,11 @@ resource "aws_instance" "nodes" {
   }
 }
 
-output "public_ip" {
+output "ansible_host_ip" {
   value = "${aws_instance.ansible-host.public_ip}"
+}
+
+output "nodes_ip" {
+  value = ["${aws_instance.nodes.*.public_ip}"]
 }
 
