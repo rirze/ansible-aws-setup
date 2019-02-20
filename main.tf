@@ -44,10 +44,11 @@ data "aws_ami" "ubuntu" {
 }
 
 data "template_file" "ansible-setup" {
-  template = "${file("ansible-setup.sh")}"
+  template = "${file("ansible-host-setup.sh")}"
   vars = {
     node_names = "${join("\n", formatlist("%s ansible_user=ubuntu", aws_instance.nodes.*.tags.Name))}"
     node_ips = "${join("\n", formatlist("%s %s", aws_instance.nodes.*.private_ip, aws_instance.nodes.*.tags.Name))}"
+    key_location = "${var.destination_location}"
   }
 }
 
@@ -63,6 +64,17 @@ resource "aws_instance" "ansible-host" {
   }
 
   user_data = "${data.template_file.ansible-setup.rendered}"
+
+  provisioner "file" {
+    connection {
+      type = "ssh"
+      user = "ubuntu"
+      private_key = "${file(var.key_location)}"
+    }
+    
+    source = "${var.key_location}"
+    destination = "${var.destination_location}"
+  }
 }
 
 resource "aws_instance" "nodes" {
@@ -73,6 +85,8 @@ resource "aws_instance" "nodes" {
   
   count = "${var.node-count}"
 
+  user_data = "${file("python-setup.sh")}"
+  
   tags {
     Name = "node0${count.index + 1}"
   }
