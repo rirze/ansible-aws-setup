@@ -13,7 +13,6 @@ ssh-add '${key_location}' >> /dev/null
 EOF
 
 # update and install ansible
-apt-get update
 apt-add-repository --yes --update ppa:ansible/ansible
 apt-get install -y ansible software-properties-common
 
