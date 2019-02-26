@@ -60,9 +60,9 @@ data "template_file" "ansible-setup" {
 resource "aws_instance" "ansible-host" {
   ami = "${data.aws_ami.ubuntu.id}"
   instance_type = "t2.micro"
-  key_name = ""${var.key_name}""
+  key_name = "${var.key_name}"
   security_groups = ["${aws_security_group.standard-ssh-http-sg.name}"]
-  
+
   tags {
     Name = "ansible-host"
   }
@@ -75,7 +75,7 @@ resource "aws_instance" "ansible-host" {
       user = "ubuntu"
       private_key = "${file(var.key_location)}"
     }
-    
+
     source = "${var.key_location}"
     destination = "${var.destination_location}"
   }
@@ -84,13 +84,13 @@ resource "aws_instance" "ansible-host" {
 resource "aws_instance" "nodes" {
   ami = "${data.aws_ami.ubuntu.id}"
   instance_type = "t2.micro"
-  key_name = ""${var.key_name}""
+  key_name = "${var.key_name}"
   security_groups = ["${aws_security_group.standard-ssh-http-sg.name}"]
-  
+
   count = "${var.node-count}"
 
   user_data = "${file("python-setup.sh")}"
-  
+
   tags {
     Name = "node0${count.index + 1}"
   }
@@ -103,4 +103,3 @@ output "ansible_host_ip" {
 output "nodes_ip" {
   value = ["${aws_instance.nodes.*.public_ip}"]
 }
-
